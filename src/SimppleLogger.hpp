@@ -15,10 +15,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_TRACE(logger, message) { \
-        if (logger.getLevel() <= pplelog::TRACE) {\
+        if (logger->getLevel() <= pplelog::TRACE) {\
            std::ostringstream oss_; \
            oss_ << "TRACE " message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the DEBUG level.
@@ -27,10 +27,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_DEBUG(logger, message) { \
-        if (logger.getLevel() <= pplelog::DEBUG) {\
+        if (logger->getLevel() <= pplelog::DEBUG) {\
            std::ostringstream oss_; \
            oss_ << "DEBUG " << message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the INFO level.
@@ -39,10 +39,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_INFO(logger, message) { \
-        if (logger.getLevel() <= pplelog::INFO) {\
+        if (logger->getLevel() <= pplelog::INFO) {\
            std::ostringstream oss_; \
            oss_ << "INFO " message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the WARN level.
@@ -51,10 +51,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_WARN(logger, message) { \
-        if (logger.getLevel() <= pplelog::WARN) {\
+        if (logger->getLevel() <= pplelog::WARN) {\
            std::ostringstream oss_; \
            oss_ << "WARN " message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the ERROR level.
@@ -63,10 +63,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_ERROR(logger, message) { \
-        if (logger.getLevel() <= pplelog::ERROR) {\
+        if (logger->getLevel() <= pplelog::ERROR) {\
            std::ostringstream oss_; \
            oss_ << "ERROR " message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the FATAL level.
@@ -75,10 +75,10 @@
  * @param message the message string to log.
  */
 #define SPPLELOG_FATAL(logger, message) { \
-        if (logger.getLevel() <= pplelog::FATAL) {\
+        if (logger->getLevel() <= pplelog::FATAL) {\
            std::ostringstream oss_; \
            oss_ << "FATAL " message; \
-           logger.log(oss_.str()); }}
+           logger->log(oss_.str()); }}
 
 
 namespace pplelog {
@@ -104,8 +104,8 @@ levels getDefaultLevel();
 void setDefaultLevel(levels newlevel);
 void setLogLevel(const std::string &name, levels level);
 void setParent(const std::string &base, const std::string &parent);
-SimppleLogger &getLogger(const std::string &s);
-SimppleLogger &getLogger(const std::string &s, const std::string &parent);
+SimppleLogger *getLogger(const std::string &s);
+SimppleLogger *getLogger(const std::string &s, const std::string &parent);
 
 }; // namespace pplelog
 
@@ -131,7 +131,7 @@ public:
     const std::string &getName() const;
 
     void setParent(const std::string &parent);
-    void setParent(const SimppleLogger &parent);
+    void setParent(const SimppleLogger *parent);
 
 
 private:
@@ -141,13 +141,14 @@ private:
     ~SimppleLogger();
 
     static void setParent(size_t hash_base, size_t hash_parent);
+    LevelTracker *partner;
 
 // Friends
     friend levels getDefaultLevel();
     friend void setDefaultLevel(levels newlevel);
-    friend void setLogLevel(const std::string name, levels level);
-    friend SimppleLogger &getLogger(const std::string &s);
-    friend SimppleLogger &getLogger(const std::string &s, const std::string &parent);
+    friend void setLogLevel(const std::string &name, levels level);
+    friend SimppleLogger *getLogger(const std::string &s);
+    friend SimppleLogger *getLogger(const std::string &s, const std::string &parent);
     friend void setParent(const std::string &base, const std::string &parent);
 };
 

@@ -73,7 +73,7 @@ void setDefaultLevel(levels newlevel) {
 }
 
 levels SimppleLogger::getLevel() const {
-	return globalLoggerMap[this->hash].first;
+	return *(this->partner);
 }
 
 static void setLogLevel(size_t hash, levels level) {
@@ -81,7 +81,7 @@ static void setLogLevel(size_t hash, levels level) {
 	elem.first.setLevel(level);
 }
 
-void setLogLevel(std::string name, levels level) {
+void setLogLevel(const std::string &name, levels level) {
 	int hash = strhash(name);
 	setLogLevel(hash, level);
 }
@@ -90,22 +90,24 @@ void SimppleLogger::setLogLevel(levels level) {
 	pplelog::setLogLevel(this->hash, level);
 }
 
-SimppleLogger &getLogger(const std::string &s) {
+SimppleLogger *getLogger(const std::string &s) {
 	int hash = strhash(s);
 	loggerElement_t &elem = globalLoggerMap[hash];
 	SimppleLogger *retlog;
 	if (elem.second == 0) {
+	    // Actually create it
 		retlog = new SimppleLogger(s);
 		globalLoggerMap[hash] = loggerElement_t(elem.first, retlog);
-		return *retlog;
+		retlog->partner = &(elem.first);
+		return retlog;
 	} else {
-		return *(elem.second);
+		return (elem.second);
 	}
 }
 
-SimppleLogger &getLogger(const std::string &s, const std::string &parent) {
-	SimppleLogger &retLogger = getLogger(s);
-	retLogger.setParent(parent);
+SimppleLogger *getLogger(const std::string &s, const std::string &parent) {
+	SimppleLogger *retLogger = getLogger(s);
+	retLogger->setParent(parent);
 	return retLogger;
 }
 
@@ -124,8 +126,8 @@ void SimppleLogger::setParent(const std::string &parent) {
 	setParent(this->hash, strhash(parent));
 }
 
-void SimppleLogger::setParent(const SimppleLogger &parent) {
-	setParent(this->hash, parent.hash);
+void SimppleLogger::setParent(const SimppleLogger *parent) {
+	setParent(this->hash, parent->hash);
 }
 
 void SimppleLogger::log(std::string s_) {
@@ -136,10 +138,17 @@ const std::string &SimppleLogger::getName() const {
 	return name;
 }
 
-SimppleLogger::SimppleLogger(const std::string &s): name(s), hash(strhash(s)) {
+SimppleLogger::SimppleLogger(const std::string &s):
+        name(s), hash(strhash(s)), partner(NULL) {
 	// Unique private constructor, initializes internal values
 
 	// Factory method should already have updated the static map
+}
+
+SimppleLogger::~SimppleLogger() {
+    // Destructor does nothing
+
+    // Prevents the compiler creating other implicit constructors
 }
 
 }; // namespace pplelog
