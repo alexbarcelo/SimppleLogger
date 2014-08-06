@@ -7,18 +7,16 @@ typedef std::map<size_t, loggerElement_t> loggerMap_t;
 
 class SingleRootLogger {
 public:
-    loggerMap_t &getLoggerMap() {
-        return this->globalLoggerMap;
+    static loggerMap_t &getLoggerMap() {
+        if (rootLogger == NULL) {
+            rootLogger = new SingleRootLogger();
+        }
+
+        return rootLogger->globalLoggerMap;
     }
 
     static levels defaultLevel;
 
-    static SingleRootLogger &getRoot() {
-        if (rootLogger == NULL) {
-            rootLogger = new SingleRootLogger();
-        }
-        return *rootLogger;
-    }
 private:
     loggerMap_t globalLoggerMap;
     SingleRootLogger() { };
@@ -102,7 +100,7 @@ levels SimppleLogger::getLevel() const {
 }
 
 static void setLogLevel(size_t hash, levels level) {
-    loggerMap_t &globalLoggerMap = SingleRootLogger::getRoot().getLoggerMap();
+    loggerMap_t &globalLoggerMap = SingleRootLogger::getLoggerMap();
 	loggerElement_t &elem = globalLoggerMap[hash];
 	elem.first.setLevel(level);
 }
@@ -117,7 +115,7 @@ void SimppleLogger::setLogLevel(levels level) {
 }
 
 SimppleLogger *getLogger(const std::string &s) {
-    loggerMap_t &globalLoggerMap = SingleRootLogger::getRoot().getLoggerMap();
+    loggerMap_t &globalLoggerMap = SingleRootLogger::getLoggerMap();
 	int hash = strhash(s);
 	loggerElement_t &elem = globalLoggerMap[hash];
 	SimppleLogger *retlog;
@@ -139,7 +137,7 @@ SimppleLogger *getLogger(const std::string &s, const std::string &parent) {
 }
 
 void SimppleLogger::setParent(size_t hash_base, size_t hash_parent) {
-    loggerMap_t &globalLoggerMap = SingleRootLogger::getRoot().getLoggerMap();
+    loggerMap_t &globalLoggerMap = SingleRootLogger::getLoggerMap();
 	loggerElement_t &elem_base = globalLoggerMap[hash_base];
 	loggerElement_t &elem_parent = globalLoggerMap[hash_parent];
 
