@@ -6,6 +6,10 @@
 #include <map>
 #include <vector>
 
+// Used only in C++11
+#include <functional>
+
+
 #include <iostream>
 
 /**
@@ -17,8 +21,8 @@
 #define SPPLELOG_TRACE(logger, message) { \
         if (logger->getLevel() <= pplelog::TRACE) {\
            std::ostringstream oss_; \
-           oss_ << "TRACE " message; \
-           logger->log(oss_.str()); }}
+           oss_ << message; \
+           logger->log(pplelog::TRACE, oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the DEBUG level.
@@ -29,8 +33,8 @@
 #define SPPLELOG_DEBUG(logger, message) { \
         if (logger->getLevel() <= pplelog::DEBUG) {\
            std::ostringstream oss_; \
-           oss_ << "DEBUG " << message; \
-           logger->log(oss_.str()); }}
+           oss_ << message; \
+           logger->log(pplelog::DEBUG, oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the INFO level.
@@ -41,8 +45,8 @@
 #define SPPLELOG_INFO(logger, message) { \
         if (logger->getLevel() <= pplelog::INFO) {\
            std::ostringstream oss_; \
-           oss_ << "INFO " message; \
-           logger->log(oss_.str()); }}
+           oss_ << message; \
+           logger->log(pplelog::INFO, oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the WARN level.
@@ -53,8 +57,8 @@
 #define SPPLELOG_WARN(logger, message) { \
         if (logger->getLevel() <= pplelog::WARN) {\
            std::ostringstream oss_; \
-           oss_ << "WARN " message; \
-           logger->log(oss_.str()); }}
+           oss_ << message; \
+           logger->log(pplelog::WARN, oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the ERROR level.
@@ -65,8 +69,8 @@
 #define SPPLELOG_ERROR(logger, message) { \
         if (logger->getLevel() <= pplelog::ERROR) {\
            std::ostringstream oss_; \
-           oss_ << "ERROR " message; \
-           logger->log(oss_.str()); }}
+           oss_ << message; \
+           logger->log(pplelog::ERROR, oss_.str()); }}
 
 /**
  * Logs a message to a specified logger with the FATAL level.
@@ -77,8 +81,8 @@
 #define SPPLELOG_FATAL(logger, message) { \
         if (logger->getLevel() <= pplelog::FATAL) {\
            std::ostringstream oss_; \
-           oss_ << "FATAL " message; \
-           logger->log(oss_.str()); }}
+           oss_ <<  message; \
+           logger->log(pplelog::FATAL, oss_.str()); }}
 
 
 namespace pplelog {
@@ -97,6 +101,20 @@ enum levels{
     NEVER_LOG = 1000
 };
 
+/**
+ * Return the friendly description of the logging level.
+ * @param level Level to be "decoded".
+ * @return A const string containing the level readable code.
+ */
+const std::string &getLevelDescription(levels level);
+
+#if __cplusplus < 201103L
+    typedef void (*logCallback_t)(std::string, pplelog::levels, std::string);
+#else
+    typedef std::function<void(std::string, pplelog::levels, std::string)> logCallback_t;
+#endif
+
+
 class LevelTracker;
 class SimppleLogger;
 
@@ -106,6 +124,10 @@ void setLogLevel(const std::string &name, levels level);
 void setParent(const std::string &base, const std::string &parent);
 SimppleLogger *getLogger(const std::string &s);
 SimppleLogger *getLogger(const std::string &s, const std::string &parent);
+
+logCallback_t getDefaultLogCallback();
+logCallback_t getCurrentLogCallback();
+void setLogCallback(logCallback_t newLogCallback);
 
 }; // namespace pplelog
 
@@ -127,12 +149,11 @@ class pplelog::SimppleLogger {
 public:
     levels getLevel() const;
     void setLogLevel(levels level);
-    void log(std::string s_);
+    void log(levels level, std::string s_);
     const std::string &getName() const;
 
     void setParent(const std::string &parent);
     void setParent(const SimppleLogger *parent);
-
 
 private:
     std::string name;

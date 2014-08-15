@@ -5,32 +5,84 @@ namespace pplelog {
 typedef std::pair<LevelTracker, SimppleLogger*> loggerElement_t;
 typedef std::map<size_t, loggerElement_t> loggerMap_t;
 
+static const std::string STR_TRACE = "TRACE";
+static const std::string STR_DEBUG = "DEBUG";
+static const std::string STR_INFO  = "INFO";
+static const std::string STR_WARN  = "WARN";
+static const std::string STR_ERROR = "ERROR";
+static const std::string STR_FATAL = "FATAL";
+static const std::string STR_DEFAULT = " -- ";
+
+const std::string &getLevelDescription(levels level) {
+	switch (level) {
+	case(TRACE):
+		return STR_TRACE;
+	case(DEBUG):
+		return STR_DEBUG;
+	case(INFO):
+		return STR_INFO;
+	case(WARN):
+		return STR_WARN;
+	case(ERROR):
+		return STR_ERROR;
+	case(FATAL):
+		return STR_FATAL;
+	default:
+		return STR_DEFAULT;
+	}
+}
+
+
 class SingleRootLogger {
 public:
-    static loggerMap_t &getLoggerMap() {
-        if (rootLogger == NULL) {
-            rootLogger = new SingleRootLogger();
-        }
 
+    static loggerMap_t &getLoggerMap() {
+    	checkRootExistence();
         return rootLogger->globalLoggerMap;
     }
 
     static levels defaultLevel;
 
-private:
-    loggerMap_t globalLoggerMap;
-    SingleRootLogger() { };
-    ~SingleRootLogger() { };
+    //* Should be assigned at all times
+    logCallback_t logCallback;
+
+    static void defaultCoutLog(std::string name, levels level, std::string str) {
+    	std::cout << "[" << name << "] |" << getLevelDescription(level) << "|:"
+    			  << str << std::endl;
+    }
+
     static SingleRootLogger *rootLogger;
 
+    inline static void checkRootExistence() {
+        if (rootLogger == NULL) {
+            rootLogger = new SingleRootLogger();
+        }
+    }
+
+private:
+    loggerMap_t globalLoggerMap;
+    SingleRootLogger() { logCallback = defaultCoutLog; };
+    ~SingleRootLogger() { };
 };
 
 SingleRootLogger *SingleRootLogger::rootLogger = NULL;
 levels SingleRootLogger::defaultLevel;
 
+logCallback_t getDefaultLogCallback() {
+	return SingleRootLogger::defaultCoutLog;
+}
+
+logCallback_t getCurrentLogCallback() {
+	SingleRootLogger::checkRootExistence();
+	return SingleRootLogger::rootLogger->logCallback;
+}
+
+void setLogCallback(const logCallback_t newLogCallback) {
+	SingleRootLogger::checkRootExistence();
+	SingleRootLogger::rootLogger->logCallback = newLogCallback;
+}
 
 #if __cplusplus < 201103L
-
 // We define an internal string hash function
 static size_t strhash(const std::string &name) {
 	int ret = 0;
@@ -156,8 +208,8 @@ void SimppleLogger::setParent(const SimppleLogger *parent) {
 	setParent(this->hash, parent->hash);
 }
 
-void SimppleLogger::log(std::string s_) {
-	std::cout << '[' << this->name << "]: " << s_ << std::endl;
+void SimppleLogger::log(levels level, std::string s_) {
+	SingleRootLogger::rootLogger->logCallback(this->name, level, s_);
 }
 
 const std::string &SimppleLogger::getName() const {
