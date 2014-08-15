@@ -35,12 +35,11 @@ int main() {
     /*
      * Actual output:
      *
-[myAppLogger]: DEBUG Default level is DEBUG
-[myAppLogger]: INFO All higher levels are automatically seen
-[myAppLogger]: WARN There are 6 levels
-[myAppLogger]: ERROR Those are:
-[myAppLogger]: ERROR TRACE, DEBUG, INFO, WARN, ERROR and FATAL
-[myAppLogger]: FATAL they are sorted this way
+[myAppLogger] |DEBUG|:Default message in default callback
+I (myAppLogger) am working at level 0(DEBUG). Message:
+My own callback
+In a lambda function! I am myAppLogger
+msg:Testing lambda callback
      *
      */
 }
