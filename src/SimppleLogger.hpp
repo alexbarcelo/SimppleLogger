@@ -6,9 +6,10 @@
 #include <map>
 #include <vector>
 
-// Used only in C++11
+#if __cplusplus >= 201103L
+// Used only in C++11 mode for std::hash and std::function
 #include <functional>
-
+#endif
 
 #include <iostream>
 

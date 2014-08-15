@@ -92,10 +92,7 @@ static size_t strhash(const std::string &name) {
 	}
 	return ret;
 }
-
 #else
-#include <functional>
-
 // We use the C++11 provided hash function
 static std::hash<std::string> strhash;
 
